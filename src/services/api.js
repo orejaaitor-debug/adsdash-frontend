@@ -1,22 +1,27 @@
 import axios from 'axios';
 
+const BASE = import.meta.env.VITE_API_URL || '';
+
+if (BASE) {
+  axios.defaults.baseURL = BASE;
+}
+
 export const metaApi = {
   getOverview: (dateFrom, dateTo) =>
-    axios.get('/api/meta/overview', { params: { dateFrom, dateTo } }).then(r => r.data),
+    axios.get(`${BASE}/api/meta/overview`, { params: { dateFrom, dateTo } }).then(r => r.data),
   getCampaigns: (dateFrom, dateTo) =>
-    axios.get('/api/meta/campaigns', { params: { dateFrom, dateTo } }).then(r => r.data),
+    axios.get(`${BASE}/api/meta/campaigns`, { params: { dateFrom, dateTo } }).then(r => r.data),
   getAdsets: (dateFrom, dateTo) =>
-    axios.get('/api/meta/adsets', { params: { dateFrom, dateTo } }).then(r => r.data),
+    axios.get(`${BASE}/api/meta/adsets`, { params: { dateFrom, dateTo } }).then(r => r.data),
 };
 
 export const googleApi = {
   getOverview: (dateFrom, dateTo) =>
-    axios.get('/api/google/overview', { params: { dateFrom, dateTo } }).then(r => r.data),
+    axios.get(`${BASE}/api/google/overview`, { params: { dateFrom, dateTo } }).then(r => r.data),
   getCampaigns: (dateFrom, dateTo) =>
-    axios.get('/api/google/campaigns', { params: { dateFrom, dateTo } }).then(r => r.data),
+    axios.get(`${BASE}/api/google/campaigns`, { params: { dateFrom, dateTo } }).then(r => r.data),
 };
 
-// Format helpers
 export function fmt(n, type = 'number') {
   if (n === null || n === undefined) return '—';
   switch (type) {
