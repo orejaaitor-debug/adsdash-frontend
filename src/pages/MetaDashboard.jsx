@@ -17,6 +17,8 @@ const OBJECTIVE_LABELS = {
   OUTCOME_SALES: 'Ventas',
   OUTCOME_LEADS: 'Leads',
   OUTCOME_TRAFFIC: 'Tráfico',
+  OUTCOME_ENGAGEMENT: 'Interacción',
+  OUTCOME_AWARENESS: 'Reconocimiento',
 };
 
 function ResultCell({ row }) {
