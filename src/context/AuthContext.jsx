@@ -3,6 +3,8 @@ import axios from 'axios';
 
 const AuthContext = createContext(null);
 
+const API = import.meta.env.VITE_API_URL || '';
+
 export function AuthProvider({ children }) {
   const [client, setClient] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -10,7 +12,7 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const token = localStorage.getItem('adsdash_token');
     if (token) {
-      axios.get('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } })
+      axios.get(`${API}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
         .then(r => { setClient(r.data.client); })
         .catch(() => { localStorage.removeItem('adsdash_token'); })
         .finally(() => setLoading(false));
@@ -20,7 +22,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   async function login(username, password) {
-    const response = await axios.post('/api/auth/login', { username, password });
+    const response = await axios.post(`${API}/api/auth/login`, { username, password });
     const { token, client } = response.data;
     localStorage.setItem('adsdash_token', token);
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -34,7 +36,6 @@ export function AuthProvider({ children }) {
     setClient(null);
   }
 
-  // Set token on every axios request
   useEffect(() => {
     const token = localStorage.getItem('adsdash_token');
     if (token) axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
