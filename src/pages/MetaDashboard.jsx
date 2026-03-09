@@ -7,20 +7,58 @@ import DateRangePicker from '../components/DateRangePicker';
 const TODAY = new Date().toISOString().split('T')[0];
 const LAST30 = (() => { const d = new Date(); d.setDate(d.getDate() - 30); return d.toISOString().split('T')[0]; })();
 
+const OBJECTIVE_LABELS = {
+  MESSAGES: 'Mensajes',
+  ENGAGEMENT: 'Interacción',
+  POST_ENGAGEMENT: 'Interacción',
+  PAGE_LIKES: 'Me gusta',
+  VIDEO_VIEWS: 'Vistas de video',
+  CONVERSIONS: 'Conversiones',
+  OUTCOME_SALES: 'Ventas',
+  OUTCOME_LEADS: 'Leads',
+  OUTCOME_TRAFFIC: 'Tráfico',
+};
+
+function ResultCell({ row }) {
+  if (row.objectiveType === 'messages') {
+    return (
+      <div>
+        <div style={{ fontFamily: 'var(--mono)', fontSize: 13 }}>{fmt(row.messages)}</div>
+        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+          {row.costPerMessage ? `${fmt(row.costPerMessage, 'currency')}/msg` : '—'}
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div>
+      <div style={{ fontFamily: 'var(--mono)', fontSize: 13 }}>{fmt(row.conversions)}</div>
+      <div style={{ fontSize: 11, color: row.roas >= 2 ? 'var(--green)' : 'var(--text-muted)' }}>
+        {row.roas ? `ROAS ${fmt(row.roas, 'roas')}` : '—'}
+      </div>
+    </div>
+  );
+}
+
 const CAMPAIGN_COLS = [
   { key: 'campaignName', label: 'Campaña' },
+  {
+    key: 'objective', label: 'Objetivo', render: v =>
+      <span style={{ fontSize: 11, color: 'var(--text-muted)', background: 'var(--surface2)', padding: '2px 8px', borderRadius: 10 }}>
+        {OBJECTIVE_LABELS[v] || v || '—'}
+      </span>
+  },
   { key: 'impressions', label: 'Impresiones', align: 'right', mono: true, render: v => fmt(v) },
   { key: 'reach', label: 'Alcance', align: 'right', mono: true, render: v => fmt(v) },
   { key: 'clicks', label: 'Clics', align: 'right', mono: true, render: v => fmt(v) },
   { key: 'ctr', label: 'CTR', align: 'right', mono: true, render: v => fmt(v, 'percent') },
   { key: 'cpc', label: 'CPC', align: 'right', mono: true, render: v => fmt(v, 'currency') },
   { key: 'spend', label: 'Inversión', align: 'right', mono: true, render: v => fmt(v, 'currency') },
-  { key: 'roas', label: 'ROAS', align: 'right', mono: true, render: v => v ? fmt(v, 'roas') : '—', },
-  { key: 'conversions', label: 'Conv.', align: 'right', mono: true, render: v => fmt(v) },
+  { key: 'campaignId', label: 'Resultado', align: 'right', render: (_, row) => <ResultCell row={row} /> },
 ];
 
 const ADSET_COLS = [
-  { key: 'campaignName', label: 'Campaña', render: (v) => <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>{v}</span> },
+  { key: 'campaignName', label: 'Campaña', render: v => <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>{v}</span> },
   { key: 'adsetName', label: 'Conjunto' },
   { key: 'impressions', label: 'Impr.', align: 'right', mono: true, render: v => fmt(v) },
   { key: 'reach', label: 'Alcance', align: 'right', mono: true, render: v => fmt(v) },
@@ -28,7 +66,7 @@ const ADSET_COLS = [
   { key: 'ctr', label: 'CTR', align: 'right', mono: true, render: v => fmt(v, 'percent') },
   { key: 'cpc', label: 'CPC', align: 'right', mono: true, render: v => fmt(v, 'currency') },
   { key: 'spend', label: 'Inversión', align: 'right', mono: true, render: v => fmt(v, 'currency') },
-  { key: 'roas', label: 'ROAS', align: 'right', mono: true, render: v => v ? fmt(v, 'roas') : '—' },
+  { key: 'adsetId', label: 'Resultado', align: 'right', render: (_, row) => <ResultCell row={row} /> },
 ];
 
 export default function MetaDashboard() {
@@ -62,10 +100,11 @@ export default function MetaDashboard() {
   useEffect(() => { fetchData(); }, [fetchData]);
 
   const s = overview;
+  const hasMessages = s?.messages > 0;
+  const hasConversions = s?.conversions > 0;
 
   return (
     <div style={styles.wrap} className="fade-in">
-      {/* Header */}
       <div style={styles.platformHeader}>
         <div style={styles.platformBadge}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="#1877F2">
@@ -83,34 +122,35 @@ export default function MetaDashboard() {
         </div>
       )}
 
-      {/* KPIs */}
       <div style={styles.kpiGrid}>
         <KpiCard label="Inversión" value={loading ? '...' : fmt(s?.spend, 'currency')} sub="Total gastado" color="#1877F2" loading={loading} icon="💰" />
         <KpiCard label="Alcance" value={loading ? '...' : fmt(s?.reach)} sub="Personas únicas" color="#6C63FF" loading={loading} icon="👥" />
         <KpiCard label="Impresiones" value={loading ? '...' : fmt(s?.impressions)} sub="Total" color="#8B5CF6" loading={loading} icon="👁" />
         <KpiCard label="Clics" value={loading ? '...' : fmt(s?.clicks)} sub={`CTR: ${fmt(s?.ctr, 'percent')}`} color="#06B6D4" loading={loading} icon="🖱" />
         <KpiCard label="CPC" value={loading ? '...' : fmt(s?.cpc, 'currency')} sub="Costo por clic" color="#10B981" loading={loading} icon="💸" />
-        <KpiCard label="ROAS" value={loading ? '...' : fmt(s?.roas, 'roas')} sub="Retorno en inversión" color={s?.roas >= 2 ? '#22c55e' : '#f59e0b'} loading={loading} icon="📈" />
-        <KpiCard label="Conversiones" value={loading ? '...' : fmt(s?.conversions)} sub="Compras/Eventos" color="#F59E0B" loading={loading} icon="🎯" />
+        {hasMessages && !loading && (
+          <KpiCard label="Mensajes" value={fmt(s?.messages)} sub={s?.costPerMessage ? `${fmt(s.costPerMessage, 'currency')} por mensaje` : 'Conversaciones iniciadas'} color="#F59E0B" loading={loading} icon="💬" />
+        )}
+        {hasConversions && !loading && (
+          <KpiCard label="Conversiones" value={fmt(s?.conversions)} sub="Compras/Eventos" color="#F59E0B" loading={loading} icon="🎯" />
+        )}
+        {(s?.roas > 0) && !loading && (
+          <KpiCard label="ROAS" value={fmt(s?.roas, 'roas')} sub="Retorno en inversión" color={s?.roas >= 2 ? '#22c55e' : '#f59e0b'} loading={loading} icon="📈" />
+        )}
       </div>
 
-      {/* Sub-tabs */}
       <div style={styles.tabs}>
         {[
           { id: 'campaigns', label: 'Campañas' },
           { id: 'adsets', label: 'Conjuntos de anuncios' },
         ].map(t => (
-          <button
-            key={t.id}
-            onClick={() => setActiveTab(t.id)}
-            style={{ ...styles.tab, ...(activeTab === t.id ? styles.tabActive : {}) }}
-          >
+          <button key={t.id} onClick={() => setActiveTab(t.id)}
+            style={{ ...styles.tab, ...(activeTab === t.id ? styles.tabActive : {}) }}>
             {t.label}
           </button>
         ))}
       </div>
 
-      {/* Tables */}
       {activeTab === 'campaigns' && (
         <DataTable columns={CAMPAIGN_COLS} rows={campaigns} loading={loading} emptyMsg="No hay campañas activas en este período" />
       )}
