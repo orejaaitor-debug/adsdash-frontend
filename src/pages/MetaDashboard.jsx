@@ -96,11 +96,11 @@ export default function MetaDashboard({ client }) {
     setError(null);
     try {
       const [ov, cmp, ads, daily] = await Promise.all([
-        metaApi.getOverview(dateRange.from, dateRange.to),
-        metaApi.getCampaigns(dateRange.from, dateRange.to),
-        metaApi.getAdsets(dateRange.from, dateRange.to),
-        metaApi.getDaily(dateRange.from, dateRange.to),
-      ]);
+  metaApi.getOverview(dateRange.from, dateRange.to, selectedAccount),
+  metaApi.getCampaigns(dateRange.from, dateRange.to, selectedAccount),
+  metaApi.getAdsets(dateRange.from, dateRange.to, selectedAccount),
+  metaApi.getDaily(dateRange.from, dateRange.to, selectedAccount),
+]);
       setOverview(ov);
       setCampaigns(cmp.campaigns);
       setAdsets(ads.adsets);
