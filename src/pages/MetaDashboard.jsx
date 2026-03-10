@@ -71,6 +71,19 @@ const ADSET_COLS = [
   { key: 'adsetId', label: 'Resultado', align: 'right', render: (_, row) => <ResultCell row={row} /> },
 ];
 
+const AD_COLS = [
+  { key: 'campaignName', label: 'Campaña', render: v => <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>{v}</span> },
+  { key: 'adsetName', label: 'Conjunto', render: v => <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>{v}</span> },
+  { key: 'adName', label: 'Anuncio' },
+  { key: 'impressions', label: 'Impr.', align: 'right', mono: true, render: v => fmt(v) },
+  { key: 'reach', label: 'Alcance', align: 'right', mono: true, render: v => fmt(v) },
+  { key: 'clicks', label: 'Clics', align: 'right', mono: true, render: v => fmt(v) },
+  { key: 'ctr', label: 'CTR', align: 'right', mono: true, render: v => fmt(v, 'percent') },
+  { key: 'cpc', label: 'CPC', align: 'right', mono: true, render: v => fmt(v, 'currency') },
+  { key: 'spend', label: 'Inversión', align: 'right', mono: true, render: v => fmt(v, 'currency') },
+  { key: 'adId', label: 'Resultado', align: 'right', render: (_, row) => <ResultCell row={row} /> },
+];
+
 export default function MetaDashboard() {
   const [dateRange, setDateRange] = useState({ from: LAST30, to: TODAY });
   const [overview, setOverview] = useState(null);
@@ -89,7 +102,7 @@ export default function MetaDashboard() {
         metaApi.getCampaigns(dateRange.from, dateRange.to),
         metaApi.getAdsets(dateRange.from, dateRange.to),
       ]);
-      setOverview(ov.summary);
+      setOverview(ov);
       setCampaigns(cmp.campaigns);
       setAdsets(ads.adsets);
     } catch (err) {
@@ -101,7 +114,7 @@ export default function MetaDashboard() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  const s = overview;
+  const s = overview?.summary;
   const hasMessages = s?.messages > 0;
   const hasConversions = s?.conversions > 0;
 
@@ -145,6 +158,7 @@ export default function MetaDashboard() {
         {[
           { id: 'campaigns', label: 'Campañas' },
           { id: 'adsets', label: 'Conjuntos de anuncios' },
+          { id: 'ads', label: 'Anuncios' },
         ].map(t => (
           <button key={t.id} onClick={() => setActiveTab(t.id)}
             style={{ ...styles.tab, ...(activeTab === t.id ? styles.tabActive : {}) }}>
@@ -158,6 +172,9 @@ export default function MetaDashboard() {
       )}
       {activeTab === 'adsets' && (
         <DataTable columns={ADSET_COLS} rows={adsets} loading={loading} emptyMsg="No hay conjuntos en este período" />
+      )}
+      {activeTab === 'ads' && (
+        <DataTable columns={AD_COLS} rows={overview?.ads} loading={loading} emptyMsg="No hay anuncios en este período" />
       )}
     </div>
   );
