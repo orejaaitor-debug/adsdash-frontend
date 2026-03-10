@@ -113,7 +113,7 @@ export default function DashboardLayout() {
 
         {/* Dashboard content */}
         <div style={styles.content}>
-          {activeTab === 'meta' && <MetaDashboard />}
+          {activeTab === 'meta' && <MetaDashboard client={client} />}
           {activeTab === 'google' && <GoogleDashboard />}
         </div>
       </main>
