@@ -13,6 +13,8 @@ export const metaApi = {
     axios.get(`${BASE}/api/meta/campaigns`, { params: { dateFrom, dateTo } }).then(r => r.data),
   getAdsets: (dateFrom, dateTo) =>
     axios.get(`${BASE}/api/meta/adsets`, { params: { dateFrom, dateTo } }).then(r => r.data),
+  getDaily: (dateFrom, dateTo) =>
+    axios.get(`${BASE}/api/meta/daily`, { params: { dateFrom, dateTo } }).then(r => r.data),
 };
 
 export const googleApi = {
