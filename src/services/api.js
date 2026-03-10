@@ -1,29 +1,24 @@
 import axios from 'axios';
-
 const BASE = import.meta.env.VITE_API_URL || '';
-
 if (BASE) {
   axios.defaults.baseURL = BASE;
 }
-
 export const metaApi = {
-  getOverview: (dateFrom, dateTo) =>
-    axios.get(`${BASE}/api/meta/overview`, { params: { dateFrom, dateTo } }).then(r => r.data),
-  getCampaigns: (dateFrom, dateTo) =>
-    axios.get(`${BASE}/api/meta/campaigns`, { params: { dateFrom, dateTo } }).then(r => r.data),
-  getAdsets: (dateFrom, dateTo) =>
-    axios.get(`${BASE}/api/meta/adsets`, { params: { dateFrom, dateTo } }).then(r => r.data),
-  getDaily: (dateFrom, dateTo) =>
-    axios.get(`${BASE}/api/meta/daily`, { params: { dateFrom, dateTo } }).then(r => r.data),
+  getOverview: (dateFrom, dateTo, accountIndex = 0) =>
+    axios.get(`${BASE}/api/meta/overview`, { params: { dateFrom, dateTo, accountIndex } }).then(r => r.data),
+  getCampaigns: (dateFrom, dateTo, accountIndex = 0) =>
+    axios.get(`${BASE}/api/meta/campaigns`, { params: { dateFrom, dateTo, accountIndex } }).then(r => r.data),
+  getAdsets: (dateFrom, dateTo, accountIndex = 0) =>
+    axios.get(`${BASE}/api/meta/adsets`, { params: { dateFrom, dateTo, accountIndex } }).then(r => r.data),
+  getDaily: (dateFrom, dateTo, accountIndex = 0) =>
+    axios.get(`${BASE}/api/meta/daily`, { params: { dateFrom, dateTo, accountIndex } }).then(r => r.data),
 };
-
 export const googleApi = {
   getOverview: (dateFrom, dateTo) =>
     axios.get(`${BASE}/api/google/overview`, { params: { dateFrom, dateTo } }).then(r => r.data),
   getCampaigns: (dateFrom, dateTo) =>
     axios.get(`${BASE}/api/google/campaigns`, { params: { dateFrom, dateTo } }).then(r => r.data),
 };
-
 export function fmt(n, type = 'number') {
   if (n === null || n === undefined) return '—';
   switch (type) {
