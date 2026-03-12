@@ -12,6 +12,8 @@ export const metaApi = {
     axios.get(`${BASE}/api/meta/adsets`, { params: { dateFrom, dateTo, accountIndex } }).then(r => r.data),
   getDaily: (dateFrom, dateTo, accountIndex = 0) =>
     axios.get(`${BASE}/api/meta/daily`, { params: { dateFrom, dateTo, accountIndex } }).then(r => r.data),
+  getCompare: (dateFrom, dateTo, accountIndex = 0) =>
+    axios.get(`${BASE}/api/meta/compare`, { params: { dateFrom, dateTo, accountIndex } }).then(r => r.data),
 };
 export const googleApi = {
   getOverview: (dateFrom, dateTo) =>
