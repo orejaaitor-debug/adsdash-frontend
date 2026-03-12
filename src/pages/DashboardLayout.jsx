@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import MetaDashboard from './MetaDashboard';
 import GoogleDashboard from './GoogleDashboard';
@@ -19,18 +19,29 @@ const NAV = [
   ), color: '#4285F4' },
 ];
 
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
+  return isMobile;
+}
+
 export default function DashboardLayout() {
   const { client, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('meta');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const handleNavClick = (id) => {
     setActiveTab(id);
     setMobileOpen(false);
   };
 
-  const SidebarContent = () => (
+  const SidebarContent = ({ mobile = false }) => (
     <>
       <div style={styles.sidebarTop}>
         <div style={styles.sidebarLogo}>
@@ -39,10 +50,10 @@ export default function DashboardLayout() {
               <path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z" fill="none" stroke="#6C63FF" strokeWidth="1.5" strokeLinejoin="round"/>
             </svg>
           </div>
-          {(sidebarOpen || mobileOpen) && <span style={styles.logoText}>AdsDash</span>}
+          {(sidebarOpen || mobile) && <span style={styles.logoText}>AdsDash</span>}
         </div>
 
-        {(sidebarOpen || mobileOpen) && (
+        {(sidebarOpen || mobile) && (
           <div style={styles.clientInfo}>
             <div style={{ ...styles.clientAvatar, background: client?.color || 'var(--accent)' }}>
               {client?.logo || client?.name?.[0]}
@@ -66,14 +77,14 @@ export default function DashboardLayout() {
                 onClick={() => handleNavClick(item.id)}
                 style={{
                   ...styles.navItem,
-                  ...(activeTab === item.id ? { ...styles.navItemActive, '--nav-color': item.color } : {}),
-                  justifyContent: (sidebarOpen || mobileOpen) ? 'flex-start' : 'center',
+                  ...(activeTab === item.id ? styles.navItemActive : {}),
+                  justifyContent: (sidebarOpen || mobile) ? 'flex-start' : 'center',
                 }}
               >
                 <span style={{ color: activeTab === item.id ? item.color : 'var(--text-muted)', flexShrink: 0 }}>
                   {item.icon}
                 </span>
-                {(sidebarOpen || mobileOpen) && (
+                {(sidebarOpen || mobile) && (
                   <span style={{ color: activeTab === item.id ? item.color : 'var(--text-muted)' }}>{item.label}</span>
                 )}
               </button>
@@ -83,16 +94,15 @@ export default function DashboardLayout() {
       </div>
 
       <div style={styles.sidebarBottom}>
-        <button
-          onClick={() => setSidebarOpen(v => !v)}
-          style={{ ...styles.toggleBtn, display: mobileOpen ? 'none' : 'flex' }}
-        >
-          <span style={{ transform: sidebarOpen ? 'rotate(0deg)' : 'rotate(180deg)', display: 'inline-block', transition: 'transform 0.2s' }}>◀</span>
-          {sidebarOpen && <span style={{ fontSize: 11, color: 'var(--text-dim)' }}>Colapsar</span>}
-        </button>
+        {!mobile && (
+          <button onClick={() => setSidebarOpen(v => !v)} style={styles.toggleBtn}>
+            <span style={{ transform: sidebarOpen ? 'rotate(0deg)' : 'rotate(180deg)', display: 'inline-block', transition: 'transform 0.2s' }}>◀</span>
+            {sidebarOpen && <span style={{ fontSize: 11, color: 'var(--text-dim)' }}>Colapsar</span>}
+          </button>
+        )}
         <button onClick={logout} style={styles.logoutBtn}>
           <span>⎋</span>
-          {(sidebarOpen || mobileOpen) && <span>Salir</span>}
+          {(sidebarOpen || mobile) && <span>Salir</span>}
         </button>
       </div>
     </>
@@ -100,110 +110,92 @@ export default function DashboardLayout() {
 
   return (
     <div style={styles.layout}>
+
       {/* Mobile overlay */}
-      <div
-        className={`mobile-overlay ${mobileOpen ? 'open' : ''}`}
-        onClick={() => setMobileOpen(false)}
-      />
+      {isMobile && mobileOpen && (
+        <div onClick={() => setMobileOpen(false)} style={styles.overlay} />
+      )}
 
       {/* Mobile topbar */}
-      <div className="mobile-topbar" style={{ display: 'none' }}>
-        <div style={styles.sidebarLogo}>
-          <div style={styles.logoIcon}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z" fill="none" stroke="#6C63FF" strokeWidth="1.5" strokeLinejoin="round"/>
-            </svg>
+      {isMobile && (
+        <div style={styles.mobileTopbar}>
+          <div style={styles.sidebarLogo}>
+            <div style={styles.logoIcon}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z" fill="none" stroke="#6C63FF" strokeWidth="1.5" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <span style={styles.logoText}>AdsDash</span>
           </div>
-          <span style={styles.logoText}>AdsDash</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ ...styles.clientAvatar, background: client?.color || 'var(--accent)', width: 28, height: 28, fontSize: 11 }}>
-            {client?.logo || client?.name?.[0]}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ ...styles.clientAvatar, background: client?.color || 'var(--accent)', width: 28, height: 28, fontSize: 11 }}>
+              {client?.logo || client?.name?.[0]}
+            </div>
+            <button onClick={() => setMobileOpen(v => !v)} style={styles.hamburger}>
+              <span style={styles.hamburgerLine} />
+              <span style={styles.hamburgerLine} />
+              <span style={styles.hamburgerLine} />
+            </button>
           </div>
-          <button
-            className="mobile-menu-btn"
-            onClick={() => setMobileOpen(v => !v)}
-            style={styles.hamburger}
-          >
-            <span style={styles.hamburgerLine} />
-            <span style={styles.hamburgerLine} />
-            <span style={styles.hamburgerLine} />
-          </button>
         </div>
+      )}
+
+      <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
+        {/* Desktop sidebar */}
+        {!isMobile && (
+          <aside style={{ ...styles.sidebar, width: sidebarOpen ? 220 : 60 }}>
+            <SidebarContent mobile={false} />
+          </aside>
+        )}
+
+        {/* Mobile sidebar drawer */}
+        {isMobile && (
+          <aside style={{
+            ...styles.sidebar,
+            width: 240,
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            height: '100vh',
+            zIndex: 50,
+            transform: mobileOpen ? 'translateX(0)' : 'translateX(-100%)',
+            transition: 'transform 0.25s ease',
+          }}>
+            <SidebarContent mobile={true} />
+          </aside>
+        )}
+
+        {/* Main content */}
+        <main style={styles.main}>
+          {!isMobile && (
+            <div style={styles.topbar}>
+              <div>
+                <h1 style={styles.pageTitle}>{NAV.find(n => n.id === activeTab)?.label}</h1>
+                <p style={styles.pageSubtitle}>
+                  {client?.metaAccounts?.[0]?.businessName || client?.meta?.businessName || client?.name} — Panel de métricas
+                </p>
+              </div>
+              <div style={styles.topbarRight}>
+                <div style={styles.statusDot} title="Conectado a API" />
+              </div>
+            </div>
+          )}
+
+          <div style={{ ...styles.content, padding: isMobile ? '16px' : '28px' }}>
+            {activeTab === 'meta' && <MetaDashboard client={client} />}
+            {activeTab === 'google' && <GoogleDashboard />}
+          </div>
+        </main>
       </div>
-
-      {/* Desktop sidebar */}
-      <aside style={{ ...styles.sidebar, width: sidebarOpen ? 220 : 60 }} className="desktop-sidebar">
-        <SidebarContent />
-      </aside>
-
-      {/* Mobile sidebar drawer */}
-      <aside style={{
-        ...styles.sidebar,
-        width: 240,
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        height: '100vh',
-        zIndex: 50,
-        transform: mobileOpen ? 'translateX(0)' : 'translateX(-100%)',
-        transition: 'transform 0.25s ease',
-        display: 'none',
-      }} className="mobile-sidebar">
-        <SidebarContent />
-      </aside>
-
-      {/* Main content */}
-      <main style={styles.main}>
-        {/* Desktop topbar */}
-        <div style={styles.topbar} className="desktop-topbar">
-          <div>
-            <h1 style={styles.pageTitle}>{NAV.find(n => n.id === activeTab)?.label}</h1>
-            <p style={styles.pageSubtitle}>
-              {client?.metaAccounts?.[0]?.businessName || client?.meta?.businessName || client?.name} — Panel de métricas
-            </p>
-          </div>
-          <div style={styles.topbarRight}>
-            <div style={styles.statusDot} title="Conectado a API" />
-          </div>
-        </div>
-
-        <div style={styles.content} className="main-content">
-          {activeTab === 'meta' && <MetaDashboard client={client} />}
-          {activeTab === 'google' && <GoogleDashboard />}
-        </div>
-      </main>
-
-      <style>{`
-        @media (max-width: 768px) {
-          .desktop-sidebar { display: none !important; }
-          .mobile-sidebar { display: flex !important; flex-direction: column; justify-content: space-between; }
-          .desktop-topbar { display: none !important; }
-        }
-        @media (min-width: 769px) {
-          .mobile-sidebar { display: none !important; }
-        }
-      `}</style>
     </div>
   );
 }
 
 const styles = {
-  layout: { display: 'flex', minHeight: '100vh', background: 'var(--bg)' },
-  sidebar: {
-    background: 'var(--surface)',
-    borderRight: '1px solid var(--border)',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    padding: '20px 12px',
-    position: 'sticky',
-    top: 0,
-    height: '100vh',
-    flexShrink: 0,
-    transition: 'width 0.2s ease',
-    overflow: 'hidden',
-  },
+  layout: { display: 'flex', flexDirection: 'column', minHeight: '100vh', background: 'var(--bg)' },
+  overlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 40, backdropFilter: 'blur(2px)' },
+  mobileTopbar: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderBottom: '1px solid var(--border)', background: 'var(--surface)', position: 'sticky', top: 0, zIndex: 30 },
+  sidebar: { background: 'var(--surface)', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '20px 12px', position: 'sticky', top: 0, height: '100vh', flexShrink: 0, transition: 'width 0.2s ease', overflow: 'hidden' },
   sidebarTop: { display: 'flex', flexDirection: 'column', gap: 24 },
   sidebarLogo: { display: 'flex', alignItems: 'center', gap: 8, padding: '0 4px' },
   logoIcon: { width: 32, height: 32, background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
@@ -217,7 +209,7 @@ const styles = {
   navItem: { alignItems: 'center', background: 'none', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer', display: 'flex', fontFamily: 'var(--font)', fontSize: 13, fontWeight: 500, gap: 10, padding: '9px 10px', transition: 'background var(--transition)', width: '100%', whiteSpace: 'nowrap' },
   navItemActive: { background: 'var(--surface2)' },
   sidebarBottom: { display: 'flex', flexDirection: 'column', gap: 4 },
-  toggleBtn: { alignItems: 'center', background: 'none', border: 'none', borderRadius: 'var(--radius-sm)', color: 'var(--text-dim)', cursor: 'pointer', fontFamily: 'var(--font)', fontSize: 11, gap: 8, padding: '8px 10px', width: '100%' },
+  toggleBtn: { alignItems: 'center', background: 'none', border: 'none', borderRadius: 'var(--radius-sm)', color: 'var(--text-dim)', cursor: 'pointer', display: 'flex', fontFamily: 'var(--font)', fontSize: 11, gap: 8, padding: '8px 10px', width: '100%' },
   logoutBtn: { alignItems: 'center', background: 'none', border: 'none', borderRadius: 'var(--radius-sm)', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', fontFamily: 'var(--font)', fontSize: 13, gap: 10, padding: '9px 10px', transition: 'all var(--transition)', width: '100%', whiteSpace: 'nowrap' },
   main: { flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 },
   topbar: { alignItems: 'center', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', padding: '20px 28px' },
@@ -225,7 +217,7 @@ const styles = {
   pageSubtitle: { color: 'var(--text-muted)', fontSize: 13, marginTop: 2 },
   topbarRight: { display: 'flex', alignItems: 'center', gap: 10 },
   statusDot: { width: 8, height: 8, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 6px #22c55e' },
-  content: { flex: 1, padding: '28px', overflowY: 'auto' },
+  content: { flex: 1, overflowY: 'auto' },
   hamburger: { background: 'none', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 5, padding: 4 },
   hamburgerLine: { display: 'block', width: 22, height: 2, background: 'var(--text-muted)', borderRadius: 2 },
 };
