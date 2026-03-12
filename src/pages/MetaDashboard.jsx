@@ -83,11 +83,11 @@ export default function MetaDashboard({ client }) {
   const [campaigns, setCampaigns] = useState(null);
   const [adsets, setAdsets] = useState(null);
   const [dailyData, setDailyData] = useState(null);
+  const [changes, setChanges] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('campaigns');
 
-  // Multi-account support
   const accounts = client?.metaAccounts || (client?.meta ? [client.meta] : []);
   const [selectedAccount, setSelectedAccount] = useState(0);
 
@@ -95,16 +95,18 @@ export default function MetaDashboard({ client }) {
     setLoading(true);
     setError(null);
     try {
-      const [ov, cmp, ads, daily] = await Promise.all([
+      const [ov, cmp, ads, daily, compare] = await Promise.all([
         metaApi.getOverview(dateRange.from, dateRange.to, selectedAccount),
         metaApi.getCampaigns(dateRange.from, dateRange.to, selectedAccount),
         metaApi.getAdsets(dateRange.from, dateRange.to, selectedAccount),
         metaApi.getDaily(dateRange.from, dateRange.to, selectedAccount),
-]);
+        metaApi.getCompare(dateRange.from, dateRange.to, selectedAccount),
+      ]);
       setOverview(ov);
       setCampaigns(cmp.campaigns);
       setAdsets(ads.adsets);
       setDailyData(daily.days);
+      setChanges(compare.changes);
     } catch (err) {
       setError(err.response?.data?.error || err.message);
     } finally {
@@ -117,10 +119,11 @@ export default function MetaDashboard({ client }) {
   const s = overview?.summary;
   const hasMessages = s?.messages > 0;
   const hasConversions = s?.conversions > 0;
+  const ch = changes;
 
   return (
     <div style={styles.wrap} className="fade-in">
-      <div style={styles.platformHeader}>
+      <div style={styles.platformHeader} className="platform-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
           <div style={styles.platformBadge}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="#1877F2">
@@ -151,28 +154,28 @@ export default function MetaDashboard({ client }) {
       )}
 
       <div style={styles.kpiGrid} className="kpi-grid">
-        <KpiCard label="Inversión" value={loading ? '...' : fmt(s?.spend, 'currency')} sub="Total gastado" color="#1877F2" loading={loading} icon="💰" />
-        <KpiCard label="Alcance" value={loading ? '...' : fmt(s?.reach)} sub="Personas únicas" color="#6C63FF" loading={loading} icon="👥" />
-        <KpiCard label="Impresiones" value={loading ? '...' : fmt(s?.impressions)} sub="Total" color="#8B5CF6" loading={loading} icon="👁" />
-        <KpiCard label="Clics" value={loading ? '...' : fmt(s?.clicks)} sub={`CTR: ${fmt(s?.ctr, 'percent')}`} color="#06B6D4" loading={loading} icon="🖱" />
-        <KpiCard label="CPC" value={loading ? '...' : fmt(s?.cpc, 'currency')} sub="Costo por clic" color="#10B981" loading={loading} icon="💸" />
+        <KpiCard label="Inversión" value={loading ? '...' : fmt(s?.spend, 'currency')} sub="Total gastado" color="#1877F2" loading={loading} icon="💰" change={ch?.spend} />
+        <KpiCard label="Alcance" value={loading ? '...' : fmt(s?.reach)} sub="Personas únicas" color="#6C63FF" loading={loading} icon="👥" change={ch?.reach} />
+        <KpiCard label="Impresiones" value={loading ? '...' : fmt(s?.impressions)} sub="Total" color="#8B5CF6" loading={loading} icon="👁" change={ch?.impressions} />
+        <KpiCard label="Clics" value={loading ? '...' : fmt(s?.clicks)} sub={`CTR: ${fmt(s?.ctr, 'percent')}`} color="#06B6D4" loading={loading} icon="🖱" change={ch?.clicks} />
+        <KpiCard label="CPC" value={loading ? '...' : fmt(s?.cpc, 'currency')} sub="Costo por clic" color="#10B981" loading={loading} icon="💸" change={ch?.cpc} />
         {hasMessages && !loading && (
-          <KpiCard label="Mensajes" value={fmt(s?.messages)} sub={s?.costPerMessage ? `${fmt(s.costPerMessage, 'currency')} por mensaje` : 'Conversaciones iniciadas'} color="#F59E0B" loading={loading} icon="💬" />
+          <KpiCard label="Mensajes" value={fmt(s?.messages)} sub={s?.costPerMessage ? `${fmt(s.costPerMessage, 'currency')} por mensaje` : 'Conversaciones iniciadas'} color="#F59E0B" loading={loading} icon="💬" change={ch?.messages} />
         )}
         {hasConversions && !loading && (
-          <KpiCard label="Conversiones" value={fmt(s?.conversions)} sub="Compras/Eventos" color="#F59E0B" loading={loading} icon="🎯" />
+          <KpiCard label="Conversiones" value={fmt(s?.conversions)} sub="Compras/Eventos" color="#F59E0B" loading={loading} icon="🎯" change={ch?.conversions} />
         )}
         {(s?.roas > 0) && !loading && (
-          <KpiCard label="ROAS" value={fmt(s?.roas, 'roas')} sub="Retorno en inversión" color={s?.roas >= 2 ? '#22c55e' : '#f59e0b'} loading={loading} icon="📈" />
+          <KpiCard label="ROAS" value={fmt(s?.roas, 'roas')} sub="Retorno en inversión" color={s?.roas >= 2 ? '#22c55e' : '#f59e0b'} loading={loading} icon="📈" change={ch?.roas} />
         )}
       </div>
 
       <MetricsChart data={dailyData} hasMessages={hasMessages} hasConversions={hasConversions} />
 
-      <div style={styles.tabs}>
+      <div style={styles.tabs} className="tabs-row">
         {[
           { id: 'campaigns', label: 'Campañas' },
-          { id: 'adsets', label: 'Conjuntos de anuncios' },
+          { id: 'adsets', label: 'Conjuntos' },
           { id: 'ads', label: 'Anuncios' },
         ].map(t => (
           <button key={t.id} onClick={() => setActiveTab(t.id)}
