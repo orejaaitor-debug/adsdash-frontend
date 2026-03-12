@@ -1,27 +1,25 @@
 export default function KpiCard({ label, value, sub, color, loading, icon }) {
   if (loading) {
     return (
-      <div style={{ ...styles.card }}>
+      <div style={{ ...styles.card }} className="kpi-card">
         <div className="skeleton" style={{ width: 80, height: 12, marginBottom: 12 }} />
         <div className="skeleton" style={{ width: 120, height: 28, marginBottom: 6 }} />
         <div className="skeleton" style={{ width: 60, height: 10 }} />
       </div>
     );
   }
-
   return (
-    <div style={{ ...styles.card, '--accent-color': color || 'var(--accent)' }} className="fade-in">
+    <div style={{ ...styles.card, '--accent-color': color || 'var(--accent)' }} className="fade-in kpi-card">
       <div style={styles.header}>
         <span style={styles.label}>{label}</span>
         {icon && <span style={{ ...styles.icon, color: color }}>{icon}</span>}
       </div>
-      <div style={{ ...styles.value, color: color || 'var(--text)' }}>{value}</div>
+      <div style={{ ...styles.value, color: color || 'var(--text)' }} className="kpi-value">{value}</div>
       {sub && <div style={styles.sub}>{sub}</div>}
       <div style={{ ...styles.accent, background: color || 'var(--accent)' }} />
     </div>
   );
 }
-
 const styles = {
   card: {
     background: 'var(--surface)',
