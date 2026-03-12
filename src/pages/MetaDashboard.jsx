@@ -150,7 +150,7 @@ export default function MetaDashboard({ client }) {
         </div>
       )}
 
-      <div style={styles.kpiGrid}>
+      <div style={styles.kpiGrid} className="kpi-grid">
         <KpiCard label="Inversión" value={loading ? '...' : fmt(s?.spend, 'currency')} sub="Total gastado" color="#1877F2" loading={loading} icon="💰" />
         <KpiCard label="Alcance" value={loading ? '...' : fmt(s?.reach)} sub="Personas únicas" color="#6C63FF" loading={loading} icon="👥" />
         <KpiCard label="Impresiones" value={loading ? '...' : fmt(s?.impressions)} sub="Total" color="#8B5CF6" loading={loading} icon="👁" />
