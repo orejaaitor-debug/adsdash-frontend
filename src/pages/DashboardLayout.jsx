@@ -23,87 +23,144 @@ export default function DashboardLayout() {
   const { client, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('meta');
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  return (
-    <div style={styles.layout}>
-      {/* Sidebar */}
-      <aside style={{ ...styles.sidebar, width: sidebarOpen ? 220 : 60 }}>
-        <div style={styles.sidebarTop}>
-          {/* Logo */}
-          <div style={styles.sidebarLogo}>
-            <div style={styles.logoIcon}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z" fill="none" stroke="#6C63FF" strokeWidth="1.5" strokeLinejoin="round"/>
-              </svg>
-            </div>
-            {sidebarOpen && <span style={styles.logoText}>AdsDash</span>}
+  const handleNavClick = (id) => {
+    setActiveTab(id);
+    setMobileOpen(false);
+  };
+
+  const SidebarContent = () => (
+    <>
+      <div style={styles.sidebarTop}>
+        <div style={styles.sidebarLogo}>
+          <div style={styles.logoIcon}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z" fill="none" stroke="#6C63FF" strokeWidth="1.5" strokeLinejoin="round"/>
+            </svg>
           </div>
+          {(sidebarOpen || mobileOpen) && <span style={styles.logoText}>AdsDash</span>}
+        </div>
 
-          {/* Client info */}
-          {sidebarOpen && (
-            <div style={styles.clientInfo}>
-              <div style={{ ...styles.clientAvatar, background: client?.color || 'var(--accent)' }}>
-                {client?.logo || client?.name?.[0]}
-              </div>
-              <div style={styles.clientDetails}>
-                <div style={styles.clientName}>{client?.name}</div>
-                <div style={styles.clientRole}>Cliente</div>
-              </div>
+        {(sidebarOpen || mobileOpen) && (
+          <div style={styles.clientInfo}>
+            <div style={{ ...styles.clientAvatar, background: client?.color || 'var(--accent)' }}>
+              {client?.logo || client?.name?.[0]}
             </div>
-          )}
+            <div style={styles.clientDetails}>
+              <div style={styles.clientName}>{client?.name}</div>
+              <div style={styles.clientRole}>Cliente</div>
+            </div>
+          </div>
+        )}
 
-          {/* Nav */}
-          <nav style={styles.nav}>
-            {NAV.map(item => (
+        <nav style={styles.nav}>
+          {NAV.map(item => {
+            const hasSection = item.id === 'meta'
+              ? (client?.metaAccounts?.length || client?.meta)
+              : client?.google;
+            if (!hasSection) return null;
+            return (
               <button
                 key={item.id}
-                onClick={() => setActiveTab(item.id)}
+                onClick={() => handleNavClick(item.id)}
                 style={{
                   ...styles.navItem,
                   ...(activeTab === item.id ? { ...styles.navItemActive, '--nav-color': item.color } : {}),
-                  justifyContent: sidebarOpen ? 'flex-start' : 'center',
+                  justifyContent: (sidebarOpen || mobileOpen) ? 'flex-start' : 'center',
                 }}
-                title={!sidebarOpen ? item.label : undefined}
               >
                 <span style={{ color: activeTab === item.id ? item.color : 'var(--text-muted)', flexShrink: 0 }}>
                   {item.icon}
                 </span>
-                {sidebarOpen && <span style={{ color: activeTab === item.id ? item.color : 'var(--text-muted)' }}>{item.label}</span>}
+                {(sidebarOpen || mobileOpen) && (
+                  <span style={{ color: activeTab === item.id ? item.color : 'var(--text-muted)' }}>{item.label}</span>
+                )}
               </button>
-            ))}
-          </nav>
-        </div>
+            );
+          })}
+        </nav>
+      </div>
 
-        {/* Sidebar bottom */}
-        <div style={styles.sidebarBottom}>
+      <div style={styles.sidebarBottom}>
+        <button
+          onClick={() => setSidebarOpen(v => !v)}
+          style={{ ...styles.toggleBtn, display: mobileOpen ? 'none' : 'flex' }}
+        >
+          <span style={{ transform: sidebarOpen ? 'rotate(0deg)' : 'rotate(180deg)', display: 'inline-block', transition: 'transform 0.2s' }}>◀</span>
+          {sidebarOpen && <span style={{ fontSize: 11, color: 'var(--text-dim)' }}>Colapsar</span>}
+        </button>
+        <button onClick={logout} style={styles.logoutBtn}>
+          <span>⎋</span>
+          {(sidebarOpen || mobileOpen) && <span>Salir</span>}
+        </button>
+      </div>
+    </>
+  );
+
+  return (
+    <div style={styles.layout}>
+      {/* Mobile overlay */}
+      <div
+        className={`mobile-overlay ${mobileOpen ? 'open' : ''}`}
+        onClick={() => setMobileOpen(false)}
+      />
+
+      {/* Mobile topbar */}
+      <div className="mobile-topbar" style={{ display: 'none' }}>
+        <div style={styles.sidebarLogo}>
+          <div style={styles.logoIcon}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z" fill="none" stroke="#6C63FF" strokeWidth="1.5" strokeLinejoin="round"/>
+            </svg>
+          </div>
+          <span style={styles.logoText}>AdsDash</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ ...styles.clientAvatar, background: client?.color || 'var(--accent)', width: 28, height: 28, fontSize: 11 }}>
+            {client?.logo || client?.name?.[0]}
+          </div>
           <button
-            onClick={() => setSidebarOpen(v => !v)}
-            style={styles.toggleBtn}
-            title={sidebarOpen ? 'Colapsar' : 'Expandir'}
+            className="mobile-menu-btn"
+            onClick={() => setMobileOpen(v => !v)}
+            style={styles.hamburger}
           >
-            <span style={{ transform: sidebarOpen ? 'rotate(0deg)' : 'rotate(180deg)', display: 'inline-block', transition: 'transform 0.2s' }}>
-              ◀
-            </span>
-            {sidebarOpen && <span style={{ fontSize: 11, color: 'var(--text-dim)' }}>Colapsar</span>}
-          </button>
-
-          <button onClick={logout} style={styles.logoutBtn}>
-            <span>⎋</span>
-            {sidebarOpen && <span>Salir</span>}
+            <span style={styles.hamburgerLine} />
+            <span style={styles.hamburgerLine} />
+            <span style={styles.hamburgerLine} />
           </button>
         </div>
+      </div>
+
+      {/* Desktop sidebar */}
+      <aside style={{ ...styles.sidebar, width: sidebarOpen ? 220 : 60 }} className="desktop-sidebar">
+        <SidebarContent />
+      </aside>
+
+      {/* Mobile sidebar drawer */}
+      <aside style={{
+        ...styles.sidebar,
+        width: 240,
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        height: '100vh',
+        zIndex: 50,
+        transform: mobileOpen ? 'translateX(0)' : 'translateX(-100%)',
+        transition: 'transform 0.25s ease',
+        display: 'none',
+      }} className="mobile-sidebar">
+        <SidebarContent />
       </aside>
 
       {/* Main content */}
       <main style={styles.main}>
-        {/* Top bar */}
-        <div style={styles.topbar}>
+        {/* Desktop topbar */}
+        <div style={styles.topbar} className="desktop-topbar">
           <div>
-            <h1 style={styles.pageTitle}>
-              {NAV.find(n => n.id === activeTab)?.label}
-            </h1>
+            <h1 style={styles.pageTitle}>{NAV.find(n => n.id === activeTab)?.label}</h1>
             <p style={styles.pageSubtitle}>
-              {client?.meta?.businessName || client?.name} — Panel de métricas
+              {client?.metaAccounts?.[0]?.businessName || client?.meta?.businessName || client?.name} — Panel de métricas
             </p>
           </div>
           <div style={styles.topbarRight}>
@@ -111,12 +168,22 @@ export default function DashboardLayout() {
           </div>
         </div>
 
-        {/* Dashboard content */}
-        <div style={styles.content}>
+        <div style={styles.content} className="main-content">
           {activeTab === 'meta' && <MetaDashboard client={client} />}
           {activeTab === 'google' && <GoogleDashboard />}
         </div>
       </main>
+
+      <style>{`
+        @media (max-width: 768px) {
+          .desktop-sidebar { display: none !important; }
+          .mobile-sidebar { display: flex !important; flex-direction: column; justify-content: space-between; }
+          .desktop-topbar { display: none !important; }
+        }
+        @media (min-width: 769px) {
+          .mobile-sidebar { display: none !important; }
+        }
+      `}</style>
     </div>
   );
 }
@@ -150,7 +217,7 @@ const styles = {
   navItem: { alignItems: 'center', background: 'none', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer', display: 'flex', fontFamily: 'var(--font)', fontSize: 13, fontWeight: 500, gap: 10, padding: '9px 10px', transition: 'background var(--transition)', width: '100%', whiteSpace: 'nowrap' },
   navItemActive: { background: 'var(--surface2)' },
   sidebarBottom: { display: 'flex', flexDirection: 'column', gap: 4 },
-  toggleBtn: { alignItems: 'center', background: 'none', border: 'none', borderRadius: 'var(--radius-sm)', color: 'var(--text-dim)', cursor: 'pointer', display: 'flex', fontFamily: 'var(--font)', fontSize: 11, gap: 8, padding: '8px 10px', width: '100%' },
+  toggleBtn: { alignItems: 'center', background: 'none', border: 'none', borderRadius: 'var(--radius-sm)', color: 'var(--text-dim)', cursor: 'pointer', fontFamily: 'var(--font)', fontSize: 11, gap: 8, padding: '8px 10px', width: '100%' },
   logoutBtn: { alignItems: 'center', background: 'none', border: 'none', borderRadius: 'var(--radius-sm)', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', fontFamily: 'var(--font)', fontSize: 13, gap: 10, padding: '9px 10px', transition: 'all var(--transition)', width: '100%', whiteSpace: 'nowrap' },
   main: { flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 },
   topbar: { alignItems: 'center', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', padding: '20px 28px' },
@@ -159,4 +226,6 @@ const styles = {
   topbarRight: { display: 'flex', alignItems: 'center', gap: 10 },
   statusDot: { width: 8, height: 8, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 6px #22c55e' },
   content: { flex: 1, padding: '28px', overflowY: 'auto' },
+  hamburger: { background: 'none', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 5, padding: 4 },
+  hamburgerLine: { display: 'block', width: 22, height: 2, background: 'var(--text-muted)', borderRadius: 2 },
 };
