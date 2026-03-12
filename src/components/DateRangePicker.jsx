@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const PRESETS = [
   { label: 'Hoy', value: 'today' },
@@ -33,16 +33,26 @@ function getRange(preset) {
   }
 }
 
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
+  return isMobile;
+}
+
 export default function DateRangePicker({ onChange }) {
   const [active, setActive] = useState('30d');
   const [custom, setCustom] = useState({ from: '', to: '' });
   const [showCustom, setShowCustom] = useState(false);
+  const isMobile = useIsMobile();
 
   function handlePreset(preset) {
     setActive(preset);
     setShowCustom(false);
-    const range = getRange(preset);
-    onChange(range);
+    onChange(getRange(preset));
   }
 
   function handleCustomApply() {
@@ -68,8 +78,9 @@ export default function DateRangePicker({ onChange }) {
         <button
           onClick={() => setShowCustom(v => !v)}
           style={{ ...styles.preset, ...(showCustom || active === 'custom' ? styles.presetActive : {}) }}
+          title="Personalizado"
         >
-          Personalizado
+          {isMobile ? '📅' : 'Personalizado'}
         </button>
       </div>
 
