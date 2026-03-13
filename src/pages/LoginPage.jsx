@@ -8,6 +8,7 @@ export default function LoginPage() {
   const [form, setForm] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [focusedField, setFocusedField] = useState(null);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -26,179 +27,224 @@ export default function LoginPage() {
     <div style={styles.page}>
       <div style={styles.bgGlow} />
 
-      {/* Logo + nombre arriba del card */}
-      <div style={styles.brandWrap} className="fade-in">
-        <div style={styles.logoCircle}>
-          <img src={`data:image/png;base64,${LOGO_B64}`} alt="Buenos Branders" style={styles.logoImg} />
-        </div>
-        <div style={styles.brandName}>
-          <span style={styles.brandWhite}>Buenos </span>
-          <span style={styles.brandGreen}>Branders</span>
-        </div>
-        <div style={styles.brandSub}>AdsDash — Panel de métricas</div>
-      </div>
-
-      {/* Card */}
-      <div style={styles.card} className="fade-in">
-        <h1 style={styles.title}>Iniciá sesión</h1>
-        <p style={styles.subtitle}>Accedé al dashboard de tu negocio</p>
-
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <div style={styles.field}>
-            <label style={styles.label}>USUARIO</label>
-            <input
-              style={styles.input}
-              type="text"
-              placeholder="tu@email.com"
-              value={form.username}
-              onChange={e => setForm(f => ({ ...f, username: e.target.value }))}
-              required
-              autoFocus
-            />
+      <div style={styles.loginBox} className="fade-in">
+        {/* Logo + nombre */}
+        <div style={styles.logoWrap}>
+          <img
+            src={`data:image/png;base64,${LOGO_B64}`}
+            alt="Buenos Branders"
+            style={styles.logoImg}
+          />
+          <div>
+            <div style={styles.brandName}>
+              Buenos <span style={styles.brandGreen}>Branders</span>
+            </div>
+            <div style={styles.brandSub}>AdsDash — Panel de métricas</div>
           </div>
-          <div style={styles.field}>
-            <label style={styles.label}>CONTRASEÑA</label>
-            <input
-              style={styles.input}
-              type="password"
-              placeholder="••••••••"
-              value={form.password}
-              onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-              required
-            />
-          </div>
+        </div>
 
-          {error && <div style={styles.error}>{error}</div>}
+        {/* Card */}
+        <div style={styles.card}>
+          <h2 style={styles.title}>Iniciá sesión</h2>
+          <p style={styles.subtitle}>Accedé al dashboard de tu negocio</p>
 
-          <button type="submit" style={styles.btn} disabled={loading}>
-            {loading ? <span style={styles.spinner} /> : 'Ingresar'}
-          </button>
-        </form>
+          <form onSubmit={handleSubmit} style={styles.form}>
+            <div style={styles.field}>
+              <label style={styles.label}>USUARIO</label>
+              <input
+                style={{
+                  ...styles.input,
+                  ...(focusedField === 'username' ? styles.inputFocus : {}),
+                }}
+                type="text"
+                placeholder="tu@email.com"
+                value={form.username}
+                onChange={e => setForm(f => ({ ...f, username: e.target.value }))}
+                onFocus={() => setFocusedField('username')}
+                onBlur={() => setFocusedField(null)}
+                required
+                autoFocus
+              />
+            </div>
+            <div style={styles.field}>
+              <label style={styles.label}>CONTRASEÑA</label>
+              <input
+                style={{
+                  ...styles.input,
+                  ...(focusedField === 'password' ? styles.inputFocus : {}),
+                }}
+                type="password"
+                placeholder="••••••••"
+                value={form.password}
+                onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+                onFocus={() => setFocusedField('password')}
+                onBlur={() => setFocusedField(null)}
+                required
+              />
+            </div>
+
+            {error && <div style={styles.error}>{error}</div>}
+
+            <button type="submit" style={styles.btn} disabled={loading}>
+              {loading ? <span style={styles.spinner} /> : 'Ingresar'}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );
 }
 
+const LIME = '#C6F135';
+const BLACK = '#0a0a0a';
+
 const styles = {
   page: {
     minHeight: '100vh',
     display: 'flex',
-    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 24,
     position: 'relative',
     overflow: 'hidden',
-    background: 'radial-gradient(ellipse at 50% 0%, rgba(180,255,50,0.08) 0%, transparent 60%), var(--bg)',
+    background: `radial-gradient(ellipse at 60% 0%, rgba(198,241,53,0.07) 0%, transparent 60%), ${BLACK}`,
     padding: '24px 16px',
+    fontFamily: "'DM Sans', var(--font)",
   },
   bgGlow: {
     position: 'absolute',
-    width: 500,
-    height: 500,
+    width: 600,
+    height: 600,
     borderRadius: '50%',
-    background: 'radial-gradient(circle, rgba(180,255,50,0.07) 0%, transparent 70%)',
-    top: '10%',
+    background: 'radial-gradient(circle, rgba(198,241,53,0.06) 0%, transparent 70%)',
+    top: '0%',
     left: '50%',
     transform: 'translateX(-50%)',
     pointerEvents: 'none',
   },
-  brandWrap: {
+  loginBox: {
+    width: '100%',
+    maxWidth: 400,
+    position: 'relative',
+    zIndex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 0,
+  },
+  logoWrap: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     gap: 10,
-    position: 'relative',
-    zIndex: 1,
-  },
-  logoCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: '50%',
-    background: '#c8f135',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-    boxShadow: '0 0 32px rgba(180,255,50,0.35)',
+    marginBottom: 40,
   },
   logoImg: {
-    width: 56,
-    height: 56,
-    objectFit: 'contain',
+    width: 72,
+    height: 72,
+    borderRadius: '50%',
+    objectFit: 'cover',
+    border: `2px solid rgba(198,241,53,0.3)`,
   },
   brandName: {
-    fontSize: 24,
+    fontFamily: "'Space Grotesk', var(--font)",
+    fontSize: 22,
     fontWeight: 700,
+    color: '#f0f0f0',
     letterSpacing: '-0.5px',
-    marginTop: 4,
+    textAlign: 'center',
   },
-  brandWhite: { color: '#fff' },
-  brandGreen: { color: '#c8f135' },
+  brandGreen: {
+    color: LIME,
+  },
   brandSub: {
     fontSize: 13,
-    color: 'var(--text-muted)',
-    letterSpacing: '0.01em',
+    color: '#888',
+    marginTop: 2,
+    textAlign: 'center',
   },
   card: {
-    background: 'rgba(255,255,255,0.04)',
+    background: '#111111',
     border: '1px solid rgba(255,255,255,0.08)',
-    borderRadius: 16,
-    padding: '36px 32px',
-    width: '100%',
-    maxWidth: 380,
-    position: 'relative',
-    zIndex: 1,
-    backdropFilter: 'blur(12px)',
+    borderRadius: 14,
+    padding: '32px',
   },
-  title: { fontSize: 22, fontWeight: 700, letterSpacing: '-0.4px', marginBottom: 4 },
-  subtitle: { color: 'var(--text-muted)', fontSize: 13, marginBottom: 28 },
-  form: { display: 'flex', flexDirection: 'column', gap: 16 },
-  field: { display: 'flex', flexDirection: 'column', gap: 6 },
-  label: { fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '0.08em' },
+  title: {
+    fontFamily: "'Space Grotesk', var(--font)",
+    fontSize: 18,
+    fontWeight: 600,
+    color: '#f0f0f0',
+    marginBottom: 4,
+    letterSpacing: '-0.3px',
+  },
+  subtitle: {
+    fontSize: 13,
+    color: '#888',
+    marginBottom: 28,
+  },
+  form: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 16,
+  },
+  field: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 6,
+  },
+  label: {
+    fontSize: 12,
+    fontWeight: 500,
+    color: '#888',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+  },
   input: {
-    background: 'rgba(255,255,255,0.05)',
-    border: '1px solid rgba(255,255,255,0.1)',
+    background: '#1a1a1a',
+    border: '1px solid rgba(255,255,255,0.08)',
     borderRadius: 8,
-    color: 'var(--text)',
-    fontFamily: 'var(--font)',
+    color: '#f0f0f0',
+    fontFamily: "'DM Sans', var(--font)",
     fontSize: 14,
-    padding: '11px 14px',
+    padding: '10px 14px',
     outline: 'none',
     transition: 'border-color 0.2s',
     width: '100%',
+    boxSizing: 'border-box',
+  },
+  inputFocus: {
+    borderColor: LIME,
   },
   error: {
-    background: 'rgba(239,68,68,0.1)',
-    border: '1px solid rgba(239,68,68,0.3)',
+    background: 'rgba(248,113,113,0.1)',
+    border: '1px solid rgba(248,113,113,0.3)',
     borderRadius: 8,
-    color: '#ef4444',
+    color: '#f87171',
     fontSize: 13,
     padding: '10px 14px',
   },
   btn: {
-    background: '#c8f135',
+    width: '100%',
+    background: LIME,
     border: 'none',
     borderRadius: 8,
-    color: '#1a1a1a',
+    color: BLACK,
     cursor: 'pointer',
-    fontFamily: 'var(--font)',
-    fontSize: 15,
-    fontWeight: 700,
-    padding: '13px',
+    fontFamily: "'Space Grotesk', var(--font)",
+    fontSize: 14,
+    fontWeight: 600,
+    padding: '11px',
     marginTop: 4,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    height: 48,
-    transition: 'opacity 0.2s',
-    letterSpacing: '-0.2px',
+    height: 46,
+    transition: 'background 0.2s',
+    letterSpacing: '-0.1px',
   },
   spinner: {
     width: 18,
     height: 18,
     border: '2px solid rgba(0,0,0,0.2)',
-    borderTopColor: '#1a1a1a',
+    borderTopColor: BLACK,
     borderRadius: '50%',
     display: 'inline-block',
     animation: 'spin 0.7s linear infinite',
