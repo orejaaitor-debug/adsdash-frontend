@@ -241,7 +241,6 @@ export default function MetaDashboard({ client }) {
   // Detectar qué tipos de objetivo hay en la cuenta
   const hasMessages    = s?.messages > 0;
   const hasConversions = s?.conversions > 0;
-  const hasEngagement  = s?.postEngagements > 0;
   const hasVideoViews  = s?.videoViews > 0;
   const hasLeads       = s?.leads > 0;
 
@@ -290,9 +289,7 @@ export default function MetaDashboard({ client }) {
         {hasMessages && !loading && (
           <KpiCard label="Mensajes"       value={fmt(s?.messages)}       sub={s?.costPerMessage ? `${fmt(s.costPerMessage, 'currency')} por mensaje` : 'Conversaciones'} color="#F59E0B" loading={loading} icon="💬" change={ch?.messages} />
         )}
-        {hasEngagement && !loading && (
-          <KpiCard label="Interacciones"  value={fmt(s?.postEngagements)} sub={s?.costPerEngagement ? `${fmt(s.costPerEngagement, 'currency')} por int.` : 'Interacciones totales'} color="#EC4899" loading={loading} icon="❤️" change={ch?.postEngagements} />
-        )}
+
         {hasVideoViews && !loading && (
           <KpiCard label="Vistas de video" value={fmt(s?.videoViews)}    sub={s?.costPerVideoView ? `${fmt(s.costPerVideoView, 'currency')} por vista` : 'Reproducciones'} color="#8B5CF6" loading={loading} icon="▶️" change={ch?.videoViews} />
         )}
