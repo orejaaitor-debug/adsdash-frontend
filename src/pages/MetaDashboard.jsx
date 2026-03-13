@@ -134,65 +134,67 @@ const RESULT_LABELS = {
   conversion: 'Conversiones',
 };
 
-function buildCols(baseKeys, resultKey) {
-  const STATUS_COL = {
-    key: 'status',
-    label: 'Estado',
-    render: (v, row) => <StatusBadge status={v} effectiveStatus={row.effectiveStatus} />,
-  };
-  const OBJECTIVE_COL = {
-    key: 'objective',
-    label: 'Objetivo',
-    render: v => (
-      <span style={{ fontSize: 11, color: 'var(--text-muted)', background: 'var(--surface2)', padding: '2px 8px', borderRadius: 10 }}>
-        {OBJECTIVE_LABELS[v] || v || '—'}
-      </span>
-    ),
-  };
-  const RESULT_COL = {
-    key: resultKey,
-    label: 'Resultado',
-    align: 'right',
-    render: (_, row) => <ResultCell row={row} />,
-  };
+const STATUS_COL = {
+  key: 'status',
+  label: 'Estado',
+  render: (v, row) => <StatusBadge status={v} effectiveStatus={row.effectiveStatus} />,
+};
+const OBJECTIVE_COL = {
+  key: 'objective',
+  label: 'Objetivo',
+  render: v => (
+    <span style={{ fontSize: 11, color: 'var(--text-muted)', background: 'var(--surface2)', padding: '2px 8px', borderRadius: 10 }}>
+      {OBJECTIVE_LABELS[v] || v || '—'}
+    </span>
+  ),
+};
+const RESULT_COL = {
+  key: '_result',
+  label: 'Resultado',
+  align: 'right',
+  render: (_, row) => <ResultCell row={row} />,
+};
 
-  return [...baseKeys, STATUS_COL, OBJECTIVE_COL, RESULT_COL];
-}
-
-const CAMPAIGN_BASE = [
+const CAMPAIGN_COLS = [
   { key: 'campaignName', label: 'Campaña' },
+  STATUS_COL,
+  OBJECTIVE_COL,
   { key: 'impressions', label: 'Impresiones', align: 'right', mono: true, render: v => fmt(v) },
   { key: 'reach', label: 'Alcance', align: 'right', mono: true, render: v => fmt(v) },
   { key: 'clicks', label: 'Clics', align: 'right', mono: true, render: v => fmt(v) },
   { key: 'ctr', label: 'CTR', align: 'right', mono: true, render: v => fmt(v, 'percent') },
   { key: 'cpc', label: 'CPC', align: 'right', mono: true, render: v => fmt(v, 'currency') },
   { key: 'spend', label: 'Inversión', align: 'right', mono: true, render: v => fmt(v, 'currency') },
+  RESULT_COL,
 ];
 
-const ADSET_BASE = [
+const ADSET_COLS = [
   { key: 'campaignName', label: 'Campaña', render: v => <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>{v}</span> },
   { key: 'adsetName', label: 'Conjunto' },
+  STATUS_COL,
+  OBJECTIVE_COL,
   { key: 'impressions', label: 'Impr.', align: 'right', mono: true, render: v => fmt(v) },
   { key: 'reach', label: 'Alcance', align: 'right', mono: true, render: v => fmt(v) },
   { key: 'clicks', label: 'Clics', align: 'right', mono: true, render: v => fmt(v) },
   { key: 'ctr', label: 'CTR', align: 'right', mono: true, render: v => fmt(v, 'percent') },
   { key: 'cpc', label: 'CPC', align: 'right', mono: true, render: v => fmt(v, 'currency') },
   { key: 'spend', label: 'Inversión', align: 'right', mono: true, render: v => fmt(v, 'currency') },
+  RESULT_COL,
 ];
 
-const AD_BASE = [
+const AD_COLS = [
   { key: 'campaignName', label: 'Campaña', render: v => <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>{v}</span> },
   { key: 'adsetName', label: 'Conjunto', render: v => <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>{v}</span> },
   { key: 'adName', label: 'Anuncio' },
+  STATUS_COL,
+  OBJECTIVE_COL,
   { key: 'impressions', label: 'Impr.', align: 'right', mono: true, render: v => fmt(v) },
   { key: 'clicks', label: 'Clics', align: 'right', mono: true, render: v => fmt(v) },
   { key: 'ctr', label: 'CTR', align: 'right', mono: true, render: v => fmt(v, 'percent') },
   { key: 'spend', label: 'Inversión', align: 'right', mono: true, render: v => fmt(v, 'currency') },
+  RESULT_COL,
 ];
 
-const CAMPAIGN_COLS = buildCols(CAMPAIGN_BASE, 'campaignId');
-const ADSET_COLS   = buildCols(ADSET_BASE, 'adsetId');
-const AD_COLS      = buildCols(AD_BASE, 'adId');
 
 export default function MetaDashboard({ client }) {
   const [dateRange, setDateRange] = useState({ from: LAST30, to: TODAY });
