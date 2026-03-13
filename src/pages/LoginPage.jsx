@@ -209,6 +209,8 @@ const styles = {
     transition: 'border-color 0.2s',
     width: '100%',
     boxSizing: 'border-box',
+    WebkitTextFillColor: '#f0f0f0',
+    WebkitBoxShadow: '0 0 0 1000px #1a1a1a inset',
   },
   inputFocus: {
     borderColor: LIME,
